@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
 
@@ -9,7 +10,18 @@ const userSchema = new mongoose.Schema({
     roles: {type: String, required: true}
 });
 
-const User = mongoose.model("User",userSchema);
+userSchema.pre("save",(next)=>{
+    if(!this.isModified("password")){
+        return next()
+    }
+    bcrypt.hash(this.password, 8, (err,hash)=>{
+        if(err) return next(err);
+        this.password = hash;
+        next();
+    });
+})
+
+const User = mongoose.model("User",userSchema,"user");
 
 
 module.exports = User;
